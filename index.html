@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="theme-color" content="#17120d">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<title>🍪 Mega Clicker</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#17120d;color:#fff;font-family:Arial,sans-serif;text-align:center;overflow-x:hidden}
+h1{margin:18px 0 4px;font-size:30px}.count{font-size:24px;margin:6px}.rate{opacity:.8;margin-bottom:12px}
+#cookie{font-size:130px;border:0;background:none;cursor:pointer;transition:.06s;touch-action:manipulation}
+#cookie:active{transform:scale(.9)}
+.shop{max-width:520px;margin:10px auto;padding:10px}
+button.buy{width:100%;margin:7px 0;padding:14px;border:0;border-radius:12px;background:#5b3920;color:#fff;text-align:left;font-size:17px}
+button.buy:disabled{opacity:.45}
+.small{font-size:13px;opacity:.75}.pop{position:fixed;pointer-events:none;font-weight:bold;color:#ffd36b;animation:up .7s forwards}
+@keyframes up{to{transform:translateY(-80px);opacity:0}}
+</style>
+</head>
+<body>
+<h1>🍪 MEGA CLICKER</h1>
+<div class="count"><span id="cookies">0</span> ciastek</div>
+<div class="rate"><span id="cps">0</span> ciastek / sek.</div>
+<button id="cookie">🍪</button>
+<div id="golden" style="display:none;font-size:70px;cursor:pointer;margin:5px">✨🍪✨</div>
+<div id="message" style="min-height:24px;color:#ffd36b;font-weight:bold"></div>
+<div class="shop">
+<h2>🛒 Sklep</h2>
+<button class="buy" id="cursor">👆 Babcia klikacz <b>• koszt: <span></span></b><br><span class="small">+1 ciastko na sekundę</span></button>
+<button class="buy" id="oven">🔥 Piekarnik <b>• koszt: <span></span></b><br><span class="small">+5 ciastek na sekundę</span></button>
+<button class="buy" id="factory">🏭 Fabryka <b>• koszt: <span></span></b><br><span class="small">+25 ciastek na sekundę</span></button>
+<button class="buy" id="clickpower">💪 Mocniejszy klik <b>• koszt: <span></span></b><br><span class="small">+1 ciastko za każde kliknięcie</span></button>
+<button class="buy" id="lab">🧪 Laboratorium <b>• koszt: <span></span></b><br><span class="small">+100 ciastek na sekundę</span></button>
+<button class="buy" id="bank">🏦 Bank ciastek <b>• koszt: <span></span></b><br><span class="small">+500 ciastek na sekundę</span></button>
+</div>
+<div class="shop">
+<h2>🏆 Osiągnięcia</h2>
+<div id="achievements" class="small">Jeszcze żadnych...</div>
+<h2>🌟 Rebirth</h2>
+<div class="small">Resetuje ciasteczka i sklep, ale daje stały bonus do klikania.</div>
+<button class="buy" id="rebirth">🌟 REBIRTH • wymaga 100 000 ciastek</button>
+<button class="buy" id="save">💾 Zapisz grę</button>
+<button class="buy" id="reset">🗑️ Resetuj zapis</button>
+</div>
+<script>
+let cookies=0, perClick=1, cps=0, rebirths=0;
+let costs={cursor:25,oven:150,factory:1000,clickpower:75,lab:5000,bank:25000};
+let achievements=[];
+const achievementList=[
+ [100,'🍪 Pierwsze 100 ciastek'],
+ [1000,'🔥 Tysiąc ciastek'],
+ [10000,'🏭 Ciasteczkowy magnat'],
+ [100000,'👑 Król ciastek']
+];
+const $=id=>document.getElementById(id);
+function fmt(n){return Math.floor(n).toLocaleString('pl-PL')}
+function render(){
+ $('cookies').textContent=fmt(cookies);$('cps').textContent=fmt(cps);
+ if(rebirths) $('message').textContent='🌟 Rebirthy: '+rebirths+' | Bonus kliknięcia: +'+rebirths;
+ document.getElementById('achievements').textContent=achievements.length?achievements.join(' • '):'Jeszcze żadnych...';
+ document.querySelectorAll('.buy').forEach(b=>b.disabled=cookies<costs[b.id]);
+ for(const id of Object.keys(costs)) $(id).querySelector('span').textContent=fmt(costs[id]);
+}
+function pop(x,y,text){let p=document.createElement('div');p.className='pop';p.textContent=text;p.style.left=x+'px';p.style.top=y+'px';document.body.appendChild(p);setTimeout(()=>p.remove(),700)}
+$('cookie').addEventListener('pointerdown',e=>{cookies+=perClick;pop(e.clientX,e.clientY,'+'+perClick+' 🍪');render()});
+function buy(id,addCps,addClick){
+ if(cookies<costs[id])return;
+ cookies-=costs[id];cps+=addCps;perClick+=addClick;costs[id]=Math.ceil(costs[id]*1.25);render();
+}
+$('cursor').onclick=()=>buy('cursor',1,0);
+$('oven').onclick=()=>buy('oven',5,0);
+$('factory').onclick=()=>buy('factory',25,0);
+$('clickpower').onclick=()=>buy('clickpower',0,1);
+$('lab').onclick=()=>buy('lab',100,0);
+$('bank').onclick=()=>buy('bank',500,0);
+
+function checkAchievements(){
+ for(const [need,name] of achievementList){
+   if(cookies>=need && !achievements.includes(name)){achievements.push(name);$('message').textContent='🏆 Osiągnięcie: '+name;}
+ }
+}
+$('rebirth').onclick=()=>{
+ if(cookies<100000)return;
+ rebirths++;cookies=0;cps=0;perClick=1+rebirths;
+ costs={cursor:25,oven:150,factory:1000,clickpower:75,lab:5000,bank:25000};
+ $('message').textContent='🌟 REBIRTH! Stały bonus do kliknięcia: +'+rebirths;
+ render();save();
+};
+$('save').onclick=()=>{save();$('message').textContent='💾 Gra zapisana!';};
+$('reset').onclick=()=>{localStorage.removeItem('megaClickerSave');location.reload();};
+
+function save(){
+ localStorage.setItem('megaClickerSave',JSON.stringify({cookies,cps,perClick,rebirths,costs,achievements}));
+}
+function load(){
+ try{
+  const s=JSON.parse(localStorage.getItem('megaClickerSave'));
+  if(s){({cookies,cps,perClick,rebirths,costs,achievements}=s);}
+ }catch(e){}
+}
+load();
+
+$('golden').onclick=()=>{
+ cookies+=Math.max(100,cps*30,perClick*100);
+ $('golden').style.display='none';
+ $('message').textContent='✨ Złote ciasteczko! WIELKI BONUS!';
+ render();save();
+};
+setInterval(()=>{
+ if(Math.random()<0.18&&!gameOver){
+   $('golden').style.display='block';
+   setTimeout(()=>{$('golden').style.display='none'},8000);
+ }
+},12000);
+
+setInterval(()=>{
+ cookies+=cps;
+ checkAchievements();
+ render();
+},1000);
+setInterval(save,10000);
+render();
+</script>
+<script>
+if ('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
+</script></body></html>
