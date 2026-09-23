@@ -1,0 +1,13 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Cookie clicker",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Cookie clicker",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "id": "Mega-clicker",
+  "description": "🍪 Mega Clicker – prosta gra typu clicker, w której klikasz ciasteczko, kupujesz ulepszenia i rozwijasz swoją ciasteczkową imperię!"
+}
